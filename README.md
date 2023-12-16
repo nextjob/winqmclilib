@@ -8,12 +8,12 @@
   This port is currently not a complete port of qmclilib.c, at this time I have only ported functions that I currently need.
   Port does not include the call function, but instead the Callx / Getarg functions of newer client versions.
   
-  Warning: winqmclilib does not maintian a storage are for Getarg parameters for each session. Using Callx will "overwrite" the previous Callx
+  Warning: winqmclilib does not maintian a storage area for Getarg parameters for each session. Using Callx will "overwrite" the previous Callx
    parameters regardless of session number.
   
   Notes: There seems to be an issue with char vs unsigned char when using the memchr c function (void *memchr(const void *str, int c, size_t n).
   If passing the int c parameter as a char, characters > 127 cannot be found (interpreted as a neg integer?).
-  The gcc compiler & linux runtime seems to be fine with it not so with C++ Builder / Windows. Need to use unsigned Char.
+  The gcc compiler & linux libraries seems to be fine with it, not so with C++ Builder / Windows. Need to use unsigned Char.
 	  
   I cannot find where the transfer buffer "buff" is freed, need to test for memory leak to see if this is really the case.
   For now I have added code to disconnect() to free buff if there are no more remaining active connections.
