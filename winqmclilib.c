@@ -17,15 +17,43 @@
  * ScarletDME Wiki: https://scarlet.deltasoft.com
  *
  * START-HISTORY (winQMclilib):
+ * xxDec23 mab add more functions, at this build we now include:
+ * QMCallx
+ * QMClose
+ * QMConnect
+ * QMConnected
+ * QMDcount
+ * QMDebug
+ * QMDisconnect
+ * QMDisconnectAll
+ * QMError
+ * QMExecute
+ * QMExtract
+ * QMFree
+ * QMGetArg
+ * QMGetSession
+ * QMIns
+ * QMLocate
+ * QMOpen
+ * QMRead
+ * QMReadl
+ * QMReadu
+ * QMRecordlock
+ * QMRelease
+ * QMReplace
+ * QMSetSession
+ * QMStatus
+ * QMWrite
+ * QMWriteu
  * xxSep23 mab attempt windows port, using c++ builder ver11.3 CE
  * This port is not intended to be a complete port of qmclilib.c, at this time only porting functions that I currently need.
  * Also will probably not include the call function, but instead the Callx / Getarg functions of newer client versions.
- * Also will probably only allow 1 session (#define MAX_SESSIONS 1 not #define MAX_SESSIONS 4). Inorder to keep the Callx / Getarg functions from
- * having issues with one seesion overwriting another sessions call results.
+ * Warning: winqmclilib does not maintian a storage area for Getarg parameters for each session.
+ *  Using Callx will "overwrite" the previous Callx parameters regardless of session number.
  *  A solution would be to add the return call buffers to the session structure....
- * Or size the pointer array CallArgArray to have a slot for the max number of call args * the max number of sessions
- *   char *    CallArgArray[MAX_ARGS*MAX_SESSIONS]
- * Then use session_idx*MAX_ARGS as the offset into CallArgArray for the sessions QMCall arguments
+ *    Or size the pointer array CallArgArray to have a slot for the max number of call args * the max number of sessions
+ *    char *    CallArgArray[MAX_ARGS*MAX_SESSIONS]
+ *    Then use session_idx*MAX_ARGS as the offset into CallArgArray for the sessions QMCall arguments
  * Notes: There seems to be an issue with char vs unsigned char when using the memchr c function (void *memchr(const void *str, int c, size_t n).
  *   If passing the int c parameter as a char, characters > 127 cannot be found (interpreted as a neg integer?).
  *   The gcc compiler & linux runtime seems to be fine with it
@@ -33,12 +61,14 @@
  *   I cannot find where the transfer buffer "buff" is freed, need to test for memory leak to see if this is really the case.
  *     For now I have added code to disconnect() to free buff if there are no more remainging active connections.
  *
+ *   Rem "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\bin\Hostx64\x86\dumpbin.exe" /exports winqmclilib.dll
+ *   To get listing of functions
  *
  * This is a work in progress.......
  *
  * START-HISTORY (ScarletDME):
- * 15Jan22 gwb Fixed issue #26 - resolves CWE-197 check, "Comparison of narrow type with wide type in loop condition." 
- * 
+ * 15Jan22 gwb Fixed issue #26 - resolves CWE-197 check, "Comparison of narrow type with wide type in loop condition."
+ *
  * 13Jan22 gwb Fixed issue #29 (QMCONFIG environment variable still being referenced)
  * 
  * 09Jan22 gwb Fixes to warnings related out output specifiers in printf().
@@ -348,7 +378,7 @@ Private FILE* srvr_debug = NULL;
 Private char *    CallArgArray[MAX_ARGS];          /* create an array of pointers, for string arguments (returned by Callx) not sure if this is correct */
 Private int       CallArgArraySz[MAX_ARGS];        /* and size of memory allocated for each  string length + terminator */
 
-#define MAX_SESSIONS 1
+#define MAX_SESSIONS 4
 Private struct {
   bool is_local;
   int16_t context;
@@ -729,6 +759,17 @@ void DLLEntry QMDisconnect() {
   }
 }
 
+/* ======================================================================
+   QMDisconnectAll()  -  Close connection to all servers.                 */
+void DLLEntry QMDisconnectAll() {
+  int16_t i;
+  for (i = 0; i < MAX_SESSIONS; i++) {
+    if (session[session_idx].context != CX_DISCONNECTED) {
+      session_idx = i;
+      disconnect();
+    }
+  }
+}
 
 /* ======================================================================
    QMError()  -  Return extended error string                             */
@@ -736,6 +777,33 @@ char* DLLEntry QMError() {
   return session[session_idx].qmerror;
 }
 
+/* ======================================================================
+   QMExecute()  -  Execute a command                                      */
+char* DLLEntry QMExecute(char* cmnd, int* err) {
+  int32_t reply_len = 0;
+  char* reply;
+  if (context_error(CX_CONNECTED))
+    goto exit_qmexecute;
+  if (!message_pair(SrvrExecute, cmnd, strlen(cmnd))) {
+    goto exit_qmexecute;
+  }
+  switch (session[session_idx].server_error) {
+    case SV_PROMPT:
+      session[session_idx].context = CX_EXECUTING;
+      /* **** FALL THROUGH **** */
+    case SV_OK:
+      reply_len = buff_bytes - offsetof(INBUFF, data.execute.reply);
+      break;
+    case SV_ON_ERROR:
+      Abort("EXECUTE generated an abort event", TRUE);
+      break;
+  }
+exit_qmexecute:
+  reply = malloc(reply_len + 1);
+  strcpy(reply, buff->data.execute.reply);
+  *err = session[session_idx].server_error;
+  return reply;
+}
 /* ======================================================================
    QMExtract()  -  Extract field, value or subvalue                       */
 char* DLLEntry QMExtract(char* src, int fno, int vno, int svno) {
@@ -765,7 +833,7 @@ char* DLLEntry QMExtract(char* src, int fno, int vno, int svno) {
     goto done; /* Extracting whole field */
   /* Skip to start value */
   while (--vno) {
-    p = memchr(src, U_VALUE_MARK, src_len);
+	p = memchr(src, U_VALUE_MARK, src_len);
     if (p == NULL)
       goto null_result; /* No such value */
     src_len -= (1 + p - src);
@@ -799,6 +867,12 @@ null_result:
    QMFree()  -  Free memory returned by other functions                   */
 void DLLEntry QMFree(void* p) {
   free(p);
+}
+
+/* ======================================================================
+   QMGetSession()  -  Return session index                                */
+int DLLEntry QMGetSession() {
+  return session_idx;
 }
 
 /* ======================================================================
@@ -926,6 +1000,171 @@ done:
   return new_str;
 }
 
+/* ======================================================================
+   QMLocate()  -  Search dynamic array                                    */
+
+int DLLEntry QMLocate(char* item,
+                      char* src,
+                      int fno,
+                      int vno,
+                      int svno,
+                      int* pos,
+                      char* order) {
+  int item_len;
+  int src_len;
+  char* p;
+  char* q;
+  bool ascending = TRUE;
+  bool left = TRUE;
+  bool sorted = FALSE;
+  int16_t idx = 1;
+  int d;
+  bool found = FALSE;
+  int i;
+  int bytes;
+  char mark;
+  int n;
+  int x;
+  char* s1;
+  char* s2;
+
+  initialise_client();
+
+  /* Establish sort mode */
+
+  i = strlen(order);
+  if (i >= 1) {
+    sorted = TRUE;
+    ascending = (order[0] != 'D');
+  }
+
+  if (i >= 2)
+    left = (order[1] != 'R');
+
+  item_len = strlen(item); /* Length of item to find */
+
+  src_len = strlen(src);
+
+  p = src;
+  bytes = src_len;
+
+  if (fno < 1)
+    fno = 1;
+
+  /* Scan to start field */
+
+  mark = U_FIELD_MARK;
+  idx = fno;
+  for (i = 1; i < fno; i++) {
+    if (bytes == 0)
+      goto done;
+	q = memchr(p, U_FIELD_MARK, bytes);
+    if (q == NULL)
+      goto done; /* No such field */
+    bytes -= (1 + q - p);
+    p = q + 1;
+  }
+
+  if (vno > 0) /* Searching for value or subvalue */
+  {
+	q = memchr(p, U_FIELD_MARK, bytes);
+    if (q != NULL)
+      bytes = q - p; /* Limit view to length of field */
+
+	mark = U_VALUE_MARK;
+    idx = vno;
+    for (i = 1; i < vno; i++) {
+      if (bytes == 0)
+        goto done;
+	  q = memchr(p, U_VALUE_MARK, bytes);
+      if (q == NULL)
+        goto done; /* No such value */
+      bytes -= (1 + q - p);
+      p = q + 1;
+    }
+
+    if (svno > 0) /* Searching for subvalue */
+    {
+	  q = memchr(p, U_VALUE_MARK, bytes);
+      if (q != NULL)
+        bytes = q - p; /* Limit view to length of value */
+
+	  mark = U_SUBVALUE_MARK;
+      idx = svno;
+      for (i = 1; i < svno; i++) /* 0512 */
+      {
+        if (bytes == 0)
+          goto done;
+        q = memchr(p, U_SUBVALUE_MARK, bytes);
+        if (q == NULL)
+          goto done; /* No such subvalue */
+        bytes -= (1 + q - p);
+        p = q + 1;
+      }
+    }
+  }
+
+  /* We are now at the start position for the search and 'mark' contains the
+    delimiting mark character.  Because we have adjusted 'bytes' to limit
+    our view to the end of the item, we do not need to worry about higher
+    level marks.  Examine successive items from this point.                 */
+
+  if (bytes == 0) {
+    if (item_len == 0)
+      found = TRUE;
+    goto done;
+  }
+
+  do {
+    q = memchr(p, mark, bytes);
+    n = (q == NULL) ? bytes : (q - p); /* Length of entry */
+    if ((n == item_len) && (memcmp(p, item, n) == 0)) {
+      found = TRUE;
+      goto done;
+    }
+
+    if (sorted) /* Check if we have gone past correct position */
+    {
+      if (left || (n == item_len)) {
+        d = memcmp(p, item, min(n, item_len));
+        if (d == 0) {
+          if ((n > item_len) == ascending)
+            goto done;
+        } else if ((d > 0) == ascending)
+          goto done;
+      } else /* Right sorted and lengths differ */
+      {
+        x = n - item_len;
+        s1 = p;
+        s2 = item;
+        if (x > 0) /* Array entry longer than item to find */
+        {
+          do {
+            d = *(s1++) - ' ';
+          } while ((d == 0) && --x);
+        } else /* Array entry shorter than item to find */
+        {
+          do {
+            d = ' ' - *(s2++);
+          } while ((d == 0) && ++x);
+        }
+        if (d == 0)
+          d = memcmp(s1, s2, min(n, item_len));
+        if ((d > 0) == ascending)
+          goto done;
+      }
+    }
+
+    bytes -= (1 + q - p);
+    p = q + 1;
+    idx++;
+  } while (q);
+
+done:
+  *pos = idx;
+  return found;
+}
+
 
 /* ======================================================================
    QMOpen()  -  Open file                                                 */
@@ -948,11 +1187,13 @@ int DLLEntry QMOpen(char* filename) {
 exit_qmopen:
   return fno;
 }
+
 /* ======================================================================
    QMRead()  -  Read record                                               */
 char* DLLEntry QMRead(int fno, char* id, int* err) {
   return read_record(fno, id, err, SrvrRead);
 }
+
 /* ======================================================================
    QMReadl()  -  Read record with shared lock                             */
 char* DLLEntry QMReadl(int fno, char* id, int wait, int* err) {
@@ -960,15 +1201,269 @@ char* DLLEntry QMReadl(int fno, char* id, int wait, int* err) {
 }
 
 /* ======================================================================
+   QMReadu()  -  Read record with exclusive lock                          */
+char* DLLEntry QMReadu(int fno, char* id, int wait, int* err) {
+  return read_record(fno, id, err, (wait) ? SrvrReaduw : SrvrReadu);
+}
+
+/* ======================================================================
+   QMRecordlock()  -  Get lock on a record                                */
+void DLLEntry QMRecordlock(int fno, char* id, int update_lock, int wait) {
+  int id_len;
+  int16_t flags;
+  struct {
+    int16_t fno;
+    int16_t flags; /* 0x0001 : Update lock */
+                     /* 0x0002 : No wait */
+    char id[MAX_ID_LEN];
+  } ALIGN2 packet;
+  if (!context_error(CX_CONNECTED)) {
+    packet.fno = ShortInt(fno);
+    id_len = strlen(id);
+    if (id_len > MAX_ID_LEN) {
+      session[session_idx].server_error = SV_ON_ERROR;
+      session[session_idx].qm_status = ER_IID;
+    } else {
+      memcpy(packet.id, id, id_len);
+      flags = (update_lock) ? 1 : 0;
+      if (!wait)
+        flags |= 2;
+      packet.flags = ShortInt(flags);
+      if (!message_pair(SrvrLockRecord, (char*)&packet, id_len + 4)) {
+        session[session_idx].server_error = SV_ON_ERROR;
+      }
+    }
+    switch (session[session_idx].server_error) {
+      case SV_OK:
+        break;
+      case SV_ON_ERROR:
+        Abort("RECORDLOCK generated an abort event", TRUE);
+        break;
+      case SV_LOCKED:
+      case SV_ELSE:
+      case SV_ERROR:
+        break;
+    }
+  }
+}
+/* ======================================================================
+   QMRelease()  -  Release lock                                           */
+void DLLEntry QMRelease(int fno, char* id) {
+  int id_len;
+  struct {
+    int16_t fno;
+    char id[MAX_ID_LEN];
+  } ALIGN2 packet;
+  if (context_error(CX_CONNECTED))
+    goto exit_release;
+  packet.fno = ShortInt(fno);
+  if (fno == 0) /* Release all locks */
+  {
+    id_len = 0;
+  } else {
+    id_len = strlen(id);
+    if (id_len > MAX_ID_LEN) {
+      session[session_idx].server_error = SV_ON_ERROR;
+      session[session_idx].qm_status = ER_IID;
+      goto release_error;
+    }
+    memcpy(packet.id, id, id_len);
+  }
+  if (!message_pair(SrvrRelease, (char*)&packet, id_len + 2)) {
+    goto exit_release;
+  }
+release_error:
+  switch (session[session_idx].server_error) {
+    case SV_OK:
+      break;
+    case SV_ON_ERROR:
+      Abort("RELEASE generated an abort event", TRUE);
+      break;
+    case SV_LOCKED:
+    case SV_ELSE:
+    case SV_ERROR:
+      break;
+  }
+exit_release:
+  return;
+}
+/* ======================================================================
+   QMReplace()  -  Replace field, value or subvalue                       */
+char* DLLEntry QMReplace(char* src, int fno, int vno, int svno, char* new) {
+  int32_t src_len;
+  char* pos;        /* Rolling source pointer */
+  int32_t bytes;   /* Remaining bytes counter */
+  int32_t ins_len; /* Length of inserted data */
+  int32_t new_len;
+  char* new_str;
+  char* p;
+  int i;
+  int32_t n;
+  int16_t fm = 0;
+  int16_t vm = 0;
+  int16_t sm = 0;
+  initialise_client();
+  src_len = strlen(src);
+  ins_len = strlen(new);
+  pos = src;
+  bytes = src_len;
+  if (src_len == 0) /* Replacing in null string */
+  {
+    if (fno > 1)
+      fm = fno - 1;
+    if (vno > 1)
+      vm = vno - 1;
+    if (svno > 1)
+      sm = svno - 1;
+    bytes = 0;
+    goto done;
+  }
+  if (fno < 1) /* Appending a new field */
+  {
+    pos = src + src_len;
+    fm = 1;
+    if (vno > 1)
+      vm = vno - 1;
+    if (svno > 1)
+      sm = svno - 1;
+    bytes = 0;
+    goto done;
+  }
+  /* Skip to start field */
+  for (i = 1; i < fno; i++) {
+	p = memchr(pos,U_FIELD_MARK, bytes);
+    if (p == NULL) /* No such field */
+    {
+      fm = fno - i;
+      if (vno > 1)
+        vm = vno - 1;
+      if (svno > 1)
+        sm = svno - 1;
+      pos = src + src_len;
+      bytes = 0;
+      goto done;
+    }
+    bytes -= (1 + p - pos);
+    pos = p + 1;
+  }
+  p = memchr(pos,U_FIELD_MARK, bytes);
+  if (p != NULL)
+    bytes = p - pos; /* Length of field */
+  if (vno == 0)
+    goto done; /* Replacing whole field */
+  if (vno < 0) /* Appending new value */
+  {
+    if (p != NULL)
+      pos = p; /* 0553 */
+    else
+      pos += bytes; /* 0553 */
+    if (bytes)
+      vm = 1; /* 0553 */
+    if (svno > 1)
+      sm = svno - 1;
+    bytes = 0;
+    goto done;
+  }
+  /* Skip to start value */
+  for (i = 1; i < vno; i++) {
+	p = memchr(pos, U_VALUE_MARK, bytes);
+    if (p == NULL) /* No such value */
+    {
+      vm = vno - i;
+      if (svno > 1)
+        sm = svno - 1;
+      pos += bytes;
+      bytes = 0;
+      goto done;
+    }
+    bytes -= (1 + p - pos);
+    pos = p + 1;
+  }
+  p = memchr(pos, U_VALUE_MARK, bytes);
+  if (p != NULL)
+    bytes = p - pos; /* Length of value, including end mark */
+  if (svno == 0)
+    goto done; /* Replacing whole value */
+  if (svno < 1) /* Appending new subvalue */
+  {
+    if (p != NULL)
+      pos = p; /* 0553 */
+    else
+      pos += bytes; /* 0553 */
+    if (bytes)
+      sm = 1; /* 0553 */
+    bytes = 0;
+    goto done;
+  }
+  /* Skip to start subvalue */
+  for (i = 1; i < svno; i++) {
+	p = memchr(pos, U_SUBVALUE_MARK, bytes);
+    if (p == NULL) /* No such subvalue */
+    {
+      sm = svno - i;
+      pos += bytes;
+      bytes = 0;
+      goto done;
+    }
+    bytes -= (1 + p - pos);
+    pos = p + 1;
+  }
+  p = memchr(pos, U_SUBVALUE_MARK, bytes);
+  if (p != NULL)
+    bytes = p - pos; /* Length of subvalue, including end mark */
+done:
+  /* Now construct new string with 'bytes' bytes omitted starting at 'pos',
+    inserting fm, vm and sm marks and new data                             */
+  new_len = src_len - bytes + fm + vm + sm + ins_len;
+  new_str = malloc(new_len + 1);
+  p = new_str;
+  n = pos - src; /* Length of leading substring */
+  if (n) {
+    memcpy(p, src, n);
+    p += n;
+  }
+  while (fm--)
+	*(p++) = U_FIELD_MARK;
+  while (vm--)
+	*(p++) = U_VALUE_MARK;
+  while (sm--)
+    *(p++) = U_SUBVALUE_MARK;
+  if (ins_len) {
+    memcpy(p, new, ins_len);
+    p += ins_len;
+  }
+  n = src_len - (bytes + n); /* Length of trailing substring */
+  if (n) {
+    memcpy(p, pos + bytes, n);
+    p += n;
+  }
+  *p = '\0';
+  return new_str;
+}
+
+/* ======================================================================
+   QMSetSession()  -  Set session index                                   */
+int DLLEntry QMSetSession(int idx) {
+  if ((idx < 0) || (idx >= MAX_SESSIONS) ||
+      (session[idx].context == CX_DISCONNECTED)) {
+    return FALSE;
+  }
+  session_idx = idx;
+  return TRUE;
+}
+
+/* ======================================================================
    QMStatus()  -  Return STATUS() value                                   */
 int DLLEntry QMStatus() {
   return session[session_idx].qm_status;
 }
+
 /* ======================================================================
    QMWrite()  -  Write record                                             */
 void DLLEntry QMWrite(int fno, char* id, char* data) {
   write_record(SrvrWrite, fno, id, data);
 }
+
 /* ======================================================================
    QMWriteu()  -  Write record, retaining lock                            */
 void DLLEntry QMWriteu(int fno, char* id, char* data) {
@@ -982,12 +1477,13 @@ void DLLEntry QMWriteu(int fno, char* id, char* data) {
 
 Private void initialise_client() {
   int16_t i;
+  /* if buff has been allocated, we have been here once before, skip */
   if (buff == NULL) {
 	set_default_character_maps();
-    buff_size = 2048;
+	buff_size = 2048;
     buff = (INBUFF*)malloc(buff_size);
 	for (i = 0; i < MAX_SESSIONS; i++) {
-      session[i].context = CX_DISCONNECTED;
+	  session[i].context = CX_DISCONNECTED;
 	  session[i].is_local = FALSE;
 	  session[i].qmerror[0] = '\0';
 	  session[i].hPipe = INVALID_HANDLE_VALUE;
