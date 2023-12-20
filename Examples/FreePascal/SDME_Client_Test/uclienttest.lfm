@@ -43,7 +43,7 @@ object Form1: TForm1
   object btnOpen: TButton
     Left = 16
     Height = 32
-    Top = 184
+    Top = 181
     Width = 75
     Caption = 'Open'
     OnClick = btnOpenClick
@@ -60,31 +60,31 @@ object Form1: TForm1
   object btnRead: TButton
     Left = 16
     Height = 33
-    Top = 312
+    Top = 296
     Width = 75
     Caption = 'Read'
     OnClick = btnReadClick
     TabOrder = 5
   end
   object edtRecId: TEdit
-    Left = 168
+    Left = 176
     Height = 23
     Top = 328
-    Width = 104
+    Width = 88
     TabOrder = 6
     Text = 'REC1'
   end
   object btnClose: TButton
-    Left = 16
+    Left = 19
     Height = 32
-    Top = 256
+    Top = 248
     Width = 75
     Caption = 'Close'
     OnClick = btnCloseClick
     TabOrder = 7
   end
   object edtFileOpen: TMaskEdit
-    Left = 112
+    Left = 120
     Height = 23
     Top = 328
     Width = 40
@@ -95,7 +95,7 @@ object Form1: TForm1
     SpaceChar = '_'
   end
   object Label1: TLabel
-    Left = 112
+    Left = 120
     Height = 15
     Top = 304
     Width = 41
@@ -622,34 +622,34 @@ object Form1: TForm1
     end
   end
   object btnWrite: TButton
-    Left = 16
+    Left = 288
     Height = 33
-    Top = 360
+    Top = 296
     Width = 75
     Caption = 'Write'
     OnClick = btnWriteClick
     TabOrder = 11
   end
-  object Button1: TButton
+  object btnCall: TButton
     Left = 16
     Height = 25
-    Top = 417
+    Top = 440
     Width = 75
     Caption = 'Call'
-    OnClick = Button1Click
+    OnClick = btnCallClick
     TabOrder = 12
   end
   object edtuser: TEdit
     Left = 88
     Height = 23
-    Top = 56
+    Top = 48
     Width = 160
     TabOrder = 13
   end
   object Label3: TLabel
-    Left = 16
+    Left = 19
     Height = 15
-    Top = 56
+    Top = 48
     Width = 58
     Caption = 'User Name'
     ParentColor = False
@@ -657,7 +657,7 @@ object Form1: TForm1
   object EdtPass: TEdit
     Left = 88
     Height = 23
-    Top = 88
+    Top = 72
     Width = 160
     TabOrder = 14
   end
@@ -669,13 +669,13 @@ object Form1: TForm1
     Caption = 'File Nbr'
     ParentColor = False
   end
-  object Button2: TButton
+  object btnLogout: TButton
     Left = 8
     Height = 25
     Top = 136
     Width = 75
     Caption = 'Logout'
-    OnClick = Button2Click
+    OnClick = btnLogoutClick
     TabOrder = 15
   end
   object edtAddress: TEdit
@@ -687,19 +687,77 @@ object Form1: TForm1
     Text = 'edtAddress'
   end
   object Label5: TLabel
-    Left = 16
+    Left = 19
     Height = 15
-    Top = 88
+    Top = 72
     Width = 50
     Caption = 'Password'
     ParentColor = False
   end
   object Label6: TLabel
-    Left = 16
+    Left = 19
     Height = 15
     Top = 24
     Width = 42
     Caption = 'Address'
     ParentColor = False
+  end
+  object cbReadu: TCheckBox
+    Left = 24
+    Height = 19
+    Top = 336
+    Width = 53
+    Caption = 'Readu'
+    TabOrder = 17
+  end
+  object btnGetSess: TButton
+    Left = 216
+    Height = 25
+    Top = 112
+    Width = 59
+    Caption = 'Session'
+    OnClick = btnGetSessClick
+    TabOrder = 18
+  end
+  object edtSess: TEdit
+    Left = 288
+    Height = 23
+    Top = 114
+    Width = 24
+    TabOrder = 19
+  end
+  object Label7: TLabel
+    Left = 112
+    Height = 15
+    Top = 448
+    Width = 172
+    Caption = 'Call BP testsub in Login Account'
+    ParentColor = False
+  end
+  object btnExecute: TButton
+    Left = 24
+    Height = 25
+    Top = 376
+    Width = 75
+    Caption = 'QMExecute'
+    OnClick = btnExecuteClick
+    TabOrder = 20
+  end
+  object cbExAction: TComboBox
+    Left = 120
+    Height = 23
+    Top = 376
+    Width = 100
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'listu'
+      'list.readu'
+      'where'
+      'who'
+    )
+    Style = csDropDownList
+    TabOrder = 21
+    Text = 'listu'
   end
 end

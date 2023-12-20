@@ -72,8 +72,13 @@ type
     btnRead: TButton;
     btnClose: TButton;
     btnWrite: TButton;
-    Button1: TButton;
-    Button2: TButton;
+    btnCall: TButton;
+    btnLogout: TButton;
+    btnGetSess: TButton;
+    btnExecute: TButton;
+    cbReadu: TCheckBox;
+    cbExAction: TComboBox;
+    edtSess: TEdit;
     edtAddress: TEdit;
     EdtPass: TEdit;
     edtuser: TEdit;
@@ -88,15 +93,18 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
+    Label7: TLabel;
     Memo1: TMemo;
     SynEdit1: TSynEdit;
     procedure btnCloseClick(Sender: TObject);
+    procedure btnExecuteClick(Sender: TObject);
+    procedure btnGetSessClick(Sender: TObject);
     procedure btnLoginClick(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
     procedure btnReadClick(Sender: TObject);
     procedure btnWriteClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure btnCallClick(Sender: TObject);
+    procedure btnLogoutClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
   private
@@ -161,8 +169,7 @@ end;
 
 procedure TForm1.btnReadClick(Sender: TObject);
 var
-  fileno, err, lns, ln : integer;
-//  myrec : RawByteString;
+  fileno, err, lns, ln, wait : integer;
   sptr  : PAnsiChar;
   myrec, myline : AnsiString;
 
@@ -170,14 +177,21 @@ begin
   if TryStrToInt(edtFileOpen.Text,fileno) then
     if fileno > 0 then
       Begin
-//      myrec := EngRead(fileno,PAnsiChar(edtRecId.Text), Perr);
-        sptr := QMRead(fileno,PAnsiChar(edtRecId.Text), err);
+
+        If cbReadu.Checked then
+          begin
+           wait := 0; // do not wait for lock to clear
+           sptr := QMReadu(fileno,PAnsiChar(edtRecId.Text),wait, err);
+          end
+        else
+           sptr := QMRead(fileno,PAnsiChar(edtRecId.Text), err);
+
         myrec := PAnsiChar(sptr);
         QMFree(sptr);
 //        SetCodePage(RawByteString(myrec), CP1252, False);
         Memo1.Lines.Add('Read Results of : ' + edtFileName.Text + ' ' + edtRecId.Text + ' err: ' + IntToStr(err));
         err := QMStatus();
-        Memo1.Lines.Add('QMStatus: ' + intTostr(err) + ' QMError: ' + QMerror());
+        Memo1.Lines.Add('Read Status: ' + intTostr(err) + ' QMError: ' + QMerror());
         Memo1.Lines.Add('rec: ' + myrec);
         Memo1.Lines.Add('end of record');
         Memo1.Lines.Add('Hex:');
@@ -232,7 +246,7 @@ begin
     end;
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.btnCallClick(Sender: TObject);
 var
   subname : AnsiString;
   str1, str2, str3, arg2 : AnsiString;
@@ -255,7 +269,7 @@ begin
   Memo1.Lines.Add('arg 2: ' + str2);
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
+procedure TForm1.btnLogoutClick(Sender: TObject);
 begin
   if (QMconnected > 0) then
   begin
@@ -279,7 +293,7 @@ procedure TForm1.btnLoginClick(Sender: TObject);
 //  connect will fail!
 //  See QM ref manual
 var
-  stat : integer;
+  stat, sessNbr : integer;
 begin
   if (QMconnected > 0) then
   begin
@@ -291,7 +305,11 @@ begin
           stat := QMConnect(PAnsiChar(edtAddress.text), QM_port, PAnsiChar(edtUser.Text), PAnsiChar(edtPass.Text), PAnsiChar(edtAccount.Text));
           Memo1.Lines.Add('Connection stat: ' + inttostr(stat));
           if (stat = 1) then
-             Memo1.Lines.Add('Connected')
+          begin
+             Memo1.Lines.Add('Connected');
+             sessNbr := QMGetSession();
+             edtSess.Text := IntToStr(sessNbr);
+          end
           else
             begin
               Memo1.Lines.Add('Connection failed: ' + QMError())
@@ -324,6 +342,33 @@ begin
         QMClose(fileno);
         Memo1.Lines.Add('Closed File Number: ' + IntToStr(fileno));
       end;
+end;
+
+procedure TForm1.btnExecuteClick(Sender: TObject);
+var
+  cmmd, myResult  : AnsiString;
+  sptr  : PAnsiChar;
+  err   : Integer;
+  PtrToErr : PInteger;
+
+begin
+  cmmd := cbExAction.Items[cbExAction.ItemIndex];
+  PtrToErr := @err;
+  sptr := QMExecute(PAnsiChar(cmmd), PtrToErr);
+  myResult := PAnsiChar(sptr);
+  QMFree(sptr);
+  myResult := StringReplace(myResult,QM_AM, #13#10,[rfReplaceAll]);
+  Memo1.Lines.Add('Results of Execute: ' + cmmd);
+  Memo1.Lines.Add(myResult);
+  Memo1.Lines.Add('err value: ' + IntToStr(err));
+end;
+
+procedure TForm1.btnGetSessClick(Sender: TObject);
+var
+  sessNbr : Integer;
+begin
+   sessNbr := QMGetSession();
+   edtSess.Text := IntToStr(sessNbr);
 end;
 
 end.

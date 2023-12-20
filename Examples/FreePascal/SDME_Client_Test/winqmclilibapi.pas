@@ -44,6 +44,36 @@ unit winQmCliLibAPI;
  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * xxDec23 mab add more functions, at this build we now include:
+ * QMCallx
+ * QMClose
+ * QMConnect
+ * QMConnected
+ * QMDcount
+ * QMDebug
+ * QMDisconnect
+ * QMDisconnectAll
+ * QMError
+ * QMExecute
+ * QMExtract
+ * QMFree
+ * QMGetArg
+ * QMGetSession
+ * QMIns
+ * QMLocate
+ * QMOpen
+ * QMRead
+ * QMReadl
+ * QMReadu
+ * QMRecordlock
+ * QMRelease
+ * QMReplace
+ * QMSetSession
+ * QMStatus
+ * QMWrite
+ * QMWriteu 
+ 
+ 
 }
 
 
@@ -58,13 +88,18 @@ function  QMConnected: Integer; cdecl;
 function  QMDcount(src, delim: PAnsiChar): Integer; cdecl;
 procedure QMDebug(mode: Int16); cdecl;
 procedure QMDisconnect; cdecl;
+procedure QMDisconnectAll; cdecl;
 function  QMError: PAnsiChar; cdecl;
+function  QMExecute(cmmd: PAnsiChar; err: PInteger): PAnsiChar; cdecl;
 function  QMExtract(src: PAnsiChar; fno, vno, svno: Integer): PAnsiChar; cdecl;
 procedure QMFree(p: PAnsiChar); cdecl;
 function  QmGetArg(ArgNo: integer): PAnsiChar; cdecl;
+function  QMGetSession: Integer; cdecl;
 function  QMIns(src: PAnsiChar; fno, vno, svno: Integer; new_string: PAnsiChar): PAnsiChar; cdecl;
 function  QMOpen(filename: PAnsiChar): Integer; cdecl;
 function  QMRead(fno: Integer; id: PAnsiChar; var err: Integer): PAnsiChar; cdecl;
+function  QMReadu(fno: Integer; id: PAnsiChar; wait: Integer; var err: Integer): PAnsiChar; cdecl;
+function  QmSetSession(sess: integer): Integer; cdecl;
 function  QMStatus : Integer; cdecl;
 procedure QMWrite(fno: Integer; id, data: PAnsiChar); cdecl;
 
@@ -75,15 +110,20 @@ procedure QMClose(fno: Integer); cdecl; external 'winqmclilib.dll' name 'QMClose
 function  QMConnect(host: PAnsiChar; port: Integer; username, password, account: PAnsiChar): Integer; cdecl; external 'winqmclilib.dll' name 'QMConnect';
 function  QMConnected: Integer; cdecl; external 'winqmclilib.dll' name 'QMConnected';
 procedure QMDisconnect; cdecl; external 'winqmclilib.dll' name 'QMDisconnect';
+procedure QMDisconnectAll; cdecl; external 'winqmclilib.dll' name 'QMDisconnectAll';
 function  QMDcount(src, delim: PAnsiChar): Integer; cdecl; external 'winqmclilib.dll' name 'QMDcount';
 function  QMError: PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMError';
+function  QMExecute(cmmd: PAnsiChar; err: PInteger): PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMExecute';
 function  QMExtract(src: PAnsiChar; fno, vno, svno: Integer): PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMExtract';
 procedure QMFree(p: PAnsiChar); cdecl; external 'winqmclilib.dll' name 'QMFree';
 function  QmGetArg(ArgNo: integer): PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMGetArg';
+function  QMGetSession: Integer; cdecl; external 'winqmclilib.dll' name 'QMGetSession';
 function  QMIns(src: PAnsiChar; fno, vno, svno: Integer; new_string: PAnsiChar): PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMIns';
 procedure QMDebug(mode: Int16 ); cdecl; external 'winqmclilib.dll' name 'QMDebug';
 function  QMOpen(filename: PAnsiChar): Integer; cdecl; external 'winqmclilib.dll' name 'QMOpen';
 function  QMRead(fno: Integer; id: PAnsiChar; var err: Integer): PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMRead';
+function  QMReadu(fno: Integer; id: PAnsiChar; wait: Integer;  var err: Integer): PAnsiChar; cdecl; external 'winqmclilib.dll' name 'QMReadu';
+function  QmSetSession(sess: integer): Integer; cdecl; external 'winqmclilib.dll' name 'QmSetSession';
 function  QMStatus : Integer; cdecl; external 'winqmclilib.dll' name 'QMStatus';
 procedure QMWrite(fno: Integer; id, data: PAnsiChar); cdecl; external 'winqmclilib.dll' name 'QMWrite';
 

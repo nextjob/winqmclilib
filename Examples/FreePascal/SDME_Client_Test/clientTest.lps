@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="clientTest.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="24"/>
+        <UsageCount Value="33"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uclienttest.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="170"/>
+        <CursorPos X="96" Y="349"/>
+        <UsageCount Value="33"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="tisQMClient.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="73"/>
+        <CursorPos X="23" Y="91"/>
+        <UsageCount Value="11"/>
+      </Unit>
+      <Unit>
+        <Filename Value="tisQMClientAPI.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="50"/>
+        <CursorPos X="22" Y="56"/>
+        <UsageCount Value="11"/>
+      </Unit>
+      <Unit>
+        <Filename Value="../FreePascal/uengtest.pas"/>
+        <UnitName Value="uEngTest"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="43"/>
+        <CursorPos X="85" Y="16"/>
+        <UsageCount Value="10"/>
+      </Unit>
+      <Unit>
+        <Filename Value="../FreePascal/Eng.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="49"/>
+        <UsageCount Value="10"/>
+      </Unit>
+      <Unit>
+        <Filename Value="../FreePascal/EngApi.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="72" Y="2"/>
+        <UsageCount Value="10"/>
+      </Unit>
+      <Unit>
+        <Filename Value="winqmclilibapi.pas"/>
+        <UnitName Value="winQmCliLibAPI"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="90"/>
+        <CursorPos X="97" Y="110"/>
+        <UsageCount Value="13"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="../winqmclilib/winqmclilib.c"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1592"/>
+        <CursorPos X="56" Y="803"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="C++"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="29">
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="230" Column="57" TopLine="214"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="231" Column="92" TopLine="231"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="232" Column="92" TopLine="180"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="187" Column="89" TopLine="176"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="176" Column="95" TopLine="167"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="177" Column="95" TopLine="168"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="179" Column="95" TopLine="170"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="307" Column="14" TopLine="264"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="253" Column="3" TopLine="243"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="254" Column="3" TopLine="244"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="270" Column="18" TopLine="262"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="297" Column="99" TopLine="283"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="182" Column="12" TopLine="163"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="147" Column="136" TopLine="134"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="182" Column="71" TopLine="163"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="308" Column="14" TopLine="290"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="307" Column="43" TopLine="290"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="308" Column="43" TopLine="291"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="309" Column="43" TopLine="292"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="308" Column="43" TopLine="291"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="309" Column="43" TopLine="292"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="310" Column="43" TopLine="293"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="309" Column="43" TopLine="292"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="310" Column="43" TopLine="293"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="359" Column="48" TopLine="326"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="357" Column="42" TopLine="334"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="359" Column="48" TopLine="334"/>
+      </Position>
+      <Position>
+        <Filename Value="winqmclilibapi.pas"/>
+        <Caret Line="95" Column="123" TopLine="87"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="356" Column="102" TopLine="337"/>
+      </Position>
+      <Position>
+        <Filename Value="uclienttest.pas"/>
+        <Caret Line="131" Column="8" TopLine="122"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
